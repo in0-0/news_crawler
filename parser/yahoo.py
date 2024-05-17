@@ -6,7 +6,17 @@ from selenium.webdriver.common.by import By
 
 class ParserYahoo:
     def __init__(self):
-        pass
+        self.name = "yahoo"
+        self.base_url = "https://finance.yahoo.com/topic/"
+        self.category = {
+            "economics": "economic-news",
+            "tech": "tech",
+            "housing": "housing-market",
+        }
+
+        self.title_content = "Mb(5px)"
+        self.date_selector = "time"
+        self.content_class = "caas-body"
 
     def parse_articles_selenium(self, article_list):
         titles = article_list.find_elements(by=By.CLASS_NAME, value="sa_text")
@@ -27,8 +37,9 @@ class ParserYahoo:
     def parse_articles_bs(self, link):
         req = requests.get(link)
         soup = BeautifulSoup(req.content, "html.parser")
-        title_text = [t.text.strip("\n") for t in soup.find_all(class_="sa_text_title")]
-        links = [t["href"] for t in soup.find_all(class_="sa_text_title")]
+        titles = soup.find_all(class_=self.title_content)
+        title_text = [t.text for t in titles]
+        links = [t.find("a")["href"] for t in titles]
         articles = [self.get_article(l) for l in links]
 
         ret_dict = {
@@ -42,10 +53,8 @@ class ParserYahoo:
     def get_article(self, link: str):
         req = requests.get(link)
         soup = BeautifulSoup(req.content, "html.parser")
-
-        date = soup.select_one(
-            "#ct > div.media_end_head.go_trans > div.media_end_head_info.nv_notrans > div.media_end_head_info_datestamp > div > span"
-        )["data-date-time"]
-        content = soup.select_one("article").text
-
+        date = soup.find("time")["datetime"]
+        content = "\n".join(
+            [p.text for p in soup.find(class_=self.content_class).select("p")[:-1]]
+        )
         return {"date": date, "content": content}

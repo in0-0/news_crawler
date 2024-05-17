@@ -6,18 +6,17 @@ from selenium.webdriver.common.by import By
 
 class ParserNaver:
 
-    base_url = ("https://news.naver.com/breakingnews/section/101/",)
-    category = {
-        "finance": "259",
-        "stock": "258",
-        "industry": "261",
-        "venture": "771",
-        "real_estate": "260",
-        "global": "262",
-    }
-
     def __init__(self):
-        pass
+        self.name = "naver"
+        self.base_url = "https://news.naver.com/breakingnews/section/101/"
+        self.category = {
+            "finance": "259",
+            "stock": "258",
+            "industry": "261",
+            "venture": "771",
+            "real_estate": "260",
+            "global": "262",
+        }
 
     def parse_articles_selenium(self, article_list):
         titles = article_list.find_elements(by=By.CLASS_NAME, value="sa_text")
