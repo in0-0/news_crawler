@@ -1,66 +1,21 @@
-import datetime
-
 from news_categories import sites
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import requests
-import re
 import pandas as pd
 import time
-from bs4 import BeautifulSoup
 
-
-def parse_articles(article_list):
-    titles = article_list.find_elements(by=By.CLASS_NAME, value="sa_text")
-    title_text = [
-        t.find_element(by=By.CLASS_NAME, value="sa_text_title").text for t in titles
-    ]
-    links = [
-        t.find_element(by=By.CLASS_NAME, value="sa_text_title").get_attribute("href")
-        for t in titles
-    ]
-    articles = [get_article(l) for l in links]
-
-    df = pd.DataFrame({"title": title_text, "link": links, "content": articles})
-    return df
-
-
-def parse_articles_bs(link):
-    req = requests.get(link)
-    soup = BeautifulSoup(req.content, "html.parser")
-    title_text = [t.text.strip("\n") for t in soup.find_all(class_="sa_text_title")]
-    links = [t["href"] for t in soup.find_all(class_="sa_text_title")]
-    articles = [get_article(l) for l in links]
-
-    df = pd.DataFrame(
-        {
-            "title": title_text,
-            "date": [a["date"] for a in articles],
-            "link": links,
-            "content": [a["content"] for a in articles],
-        },
-    )
-    return df
-
-
-def get_article(link: str):
-    req = requests.get(link)
-    soup = BeautifulSoup(req.content, "html.parser")
-
-    date = soup.select_one(
-        "#ct > div.media_end_head.go_trans > div.media_end_head_info.nv_notrans > div.media_end_head_info_datestamp > div > span"
-    )["data-date-time"]
-    content = soup.select_one("article").text
-
-    return {"date": date, "content": content}
-
+from parser.naver import ParserNaver
 
 if __name__ == "__main__":
-    for category, value in sites["naver"]["category"].items():
-        cur_site = sites["naver"]["base_url"] + value
+    parser = ParserNaver()
+
+    for category, value in parser.category.items():
+        cur_site = parser.base_url + value
 
         st = time.time()
-        parse_articles_bs(cur_site).to_csv(f"{category}.csv")
+        ret_dict = parser.parse_articles_bs(cur_site)
         et = time.time()
-        print(f"{category} done.. {et-st:.2f} seconds")
+        print(f"parsing {category} done.. {et-st:.2f} seconds")
+        df = pd.DataFrame(ret_dict)
+        df["publisher"] = sites["naver"]["name"]
+        df.to_csv(f"{category}.csv", index=False)
+        print(f"save {category} done..")

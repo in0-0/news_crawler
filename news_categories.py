@@ -1,5 +1,6 @@
 sites = {
     "naver": {
+        "name": "naver",
         "base_url": "https://news.naver.com/breakingnews/section/101/",
         "category": {
             "finance": "259",
