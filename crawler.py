@@ -1,3 +1,5 @@
+import datetime
+
 from news_categories import sites
 
 from selenium import webdriver
@@ -31,15 +33,27 @@ def parse_articles_bs(link):
     links = [t["href"] for t in soup.find_all(class_="sa_text_title")]
     articles = [get_article(l) for l in links]
 
-    df = pd.DataFrame({"title": title_text, "link": links, "content": articles})
+    df = pd.DataFrame(
+        {
+            "title": title_text,
+            "date": [a["date"] for a in articles],
+            "link": links,
+            "content": [a["content"] for a in articles],
+        },
+    )
     return df
 
 
 def get_article(link: str):
     req = requests.get(link)
     soup = BeautifulSoup(req.content, "html.parser")
-    ret = soup.select_one("article").text
-    return ret
+
+    date = soup.select_one(
+        "#ct > div.media_end_head.go_trans > div.media_end_head_info.nv_notrans > div.media_end_head_info_datestamp > div > span"
+    )["data-date-time"]
+    content = soup.select_one("article").text
+
+    return {"date": date, "content": content}
 
 
 if __name__ == "__main__":
@@ -47,6 +61,6 @@ if __name__ == "__main__":
         cur_site = sites["naver"]["base_url"] + value
 
         st = time.time()
-        parse_articles_bs(cur_site).to_csv(f"{category}.csv", index=False)
+        parse_articles_bs(cur_site).to_csv(f"{category}.csv")
         et = time.time()
         print(f"{category} done.. {et-st:.2f} seconds")
