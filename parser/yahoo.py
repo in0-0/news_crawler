@@ -3,8 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
+from parser.parser import AbcParser
 
-class ParserYahoo:
+
+class ParserYahoo(AbcParser):
     def __init__(self):
         self.name = "yahoo"
         self.base_url = "https://finance.yahoo.com/topic/"
@@ -18,23 +20,7 @@ class ParserYahoo:
         self.date_selector = "time"
         self.content_class = "caas-body"
 
-    def parse_articles_selenium(self, article_list):
-        titles = article_list.find_elements(by=By.CLASS_NAME, value="sa_text")
-        title_text = [
-            t.find_element(by=By.CLASS_NAME, value="sa_text_title").text for t in titles
-        ]
-        links = [
-            t.find_element(by=By.CLASS_NAME, value="sa_text_title").get_attribute(
-                "href"
-            )
-            for t in titles
-        ]
-        articles = [self.get_article(l) for l in links]
-
-        df = pd.DataFrame({"title": title_text, "link": links, "content": articles})
-        return df
-
-    def parse_articles_bs(self, link):
+    def parse_articles(self, link):
         req = requests.get(link)
         soup = BeautifulSoup(req.content, "html.parser")
         titles = soup.find_all(class_=self.title_content)

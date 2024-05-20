@@ -3,8 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
+from parser.parser import AbcParser
 
-class ParserNaver:
+
+class ParserNaver(AbcParser):
 
     def __init__(self):
         self.name = "naver"
@@ -22,23 +24,7 @@ class ParserNaver:
         self.date_selector = "#ct > div.media_end_head.go_trans > div.media_end_head_info.nv_notrans > div.media_end_head_info_datestamp > div > span"
         self.content_class = "article"
 
-    def parse_articles_selenium(self, article_list):
-        titles = article_list.find_elements(by=By.CLASS_NAME, value="sa_text")
-        title_text = [
-            t.find_element(by=By.CLASS_NAME, value="sa_text_title").text for t in titles
-        ]
-        links = [
-            t.find_element(by=By.CLASS_NAME, value="sa_text_title").get_attribute(
-                "href"
-            )
-            for t in titles
-        ]
-        articles = [self.get_article(l) for l in links]
-
-        df = pd.DataFrame({"title": title_text, "link": links, "content": articles})
-        return df
-
-    def parse_articles_bs(self, link):
+    def parse_articles(self, link):
         req = requests.get(link)
         soup = BeautifulSoup(req.content, "html.parser")
         titles = soup.find_all(class_=self.title_content)

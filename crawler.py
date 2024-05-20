@@ -7,7 +7,7 @@ from parser.naver import ParserNaver
 from parser.yahoo import ParserYahoo
 
 if __name__ == "__main__":
-    parser = ParserYahoo()
+    parser = ParserNaver()
 
     for category, value in parser.category.items():
         cur_site = parser.base_url + value
