@@ -3,10 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
-from parser.parser import AbcParser
+from parser.defualt_parser import DefualtParser
 
 
-class ParserNaver(AbcParser):
+class ParserNaver(DefualtParser):
 
     def __init__(self):
         self.name = "naver"
@@ -25,7 +25,7 @@ class ParserNaver(AbcParser):
         self.content_class = "article"
 
     def parse_articles(self, link):
-        req = requests.get(link)
+        req = requests.get(link, headers=self.request_headers)
         soup = BeautifulSoup(req.content, "html.parser")
         titles = soup.find_all(class_=self.title_content)
         title_text = [t.text.strip("\n") for t in titles]
@@ -41,7 +41,7 @@ class ParserNaver(AbcParser):
         return ret_dict
 
     def get_article(self, link: str):
-        req = requests.get(link)
+        req = requests.get(link, headers=self.request_headers)
         soup = BeautifulSoup(req.content, "html.parser")
 
         date = soup.select_one(self.date_selector)["data-date-time"]

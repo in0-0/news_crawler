@@ -3,10 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
-from parser.parser import AbcParser
+from parser.defualt_parser import DefualtParser
 
 
-class ParserYahoo(AbcParser):
+class ParserYahoo(DefualtParser):
     def __init__(self):
         self.name = "yahoo"
         self.base_url = "https://finance.yahoo.com/topic/"
@@ -21,10 +21,11 @@ class ParserYahoo(AbcParser):
         self.content_class = "caas-body"
 
     def parse_articles(self, link):
-        req = requests.get(link)
+        req = requests.get(link, headers=self.request_headers)
         soup = BeautifulSoup(req.content, "html.parser")
         titles = soup.find_all(class_=self.title_content)
         title_text = [t.text for t in titles]
+        print(len(titles))
         links = [t.find("a")["href"] for t in titles]
         articles = [self.get_article(l) for l in links]
 
@@ -37,10 +38,13 @@ class ParserYahoo(AbcParser):
         return ret_dict
 
     def get_article(self, link: str):
-        req = requests.get(link)
-        soup = BeautifulSoup(req.content, "html.parser")
-        date = soup.find("time")["datetime"]
-        content = "\n".join(
-            [p.text for p in soup.find(class_=self.content_class).select("p")[:-1]]
-        )
+        try:
+            req = requests.get(link, headers=self.request_headers)
+            soup = BeautifulSoup(req.content, "html.parser")
+            date = soup.find("time")["datetime"]
+            content = "\n".join(
+                [p.text for p in soup.find(class_=self.content_class).select("p")[:-1]]
+            )
+        except Exception as e:
+            print(str(e) + link)
         return {"date": date, "content": content}
