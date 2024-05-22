@@ -10,7 +10,7 @@ class DefualtParser:
     def __init__(self):
         pass
 
-    def parse_articles(self, link: str):
+    def parse_articles(self, link: str, category: str):
         print("Not implemented!")
 
     def get_article(self, link: str):

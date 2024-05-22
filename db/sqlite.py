@@ -15,18 +15,20 @@ class DBSqlite:
     def create_table(self):
         create_sql = """
         CREATE TABLE IF NOT EXISTS news (
+            id INTEGER AUTO_INCREMENT,
             title TEXT NOT NULL,
             date TEXT,
             link TEXT,
             content TEXT,
-            publisher TEXT
+            publisher TEXT,
+            category TEXT
         );
         """
 
         self.execute(create_sql)
 
     def insert_from_df(self, df):
-        df.to_sql("news", self.conn, if_exists="append", index=False)
+        df.to_sql("news", self.conn, if_exists="append", index=True, index_label="id")
         self.conn.commit()
 
     def query_to_df(self, query: str = "SELECT * FROM news"):

@@ -20,20 +20,26 @@ class ParserYahoo(DefualtParser):
         self.date_selector = "time"
         self.content_class = "caas-body"
 
-    def parse_articles(self, link):
-        req = requests.get(link, headers=self.request_headers)
+    def parse_articles(self, link, category):
+        req = requests.get(link)
         soup = BeautifulSoup(req.content, "html.parser")
         titles = soup.find_all(class_=self.title_content)
+
+        print(f"category: {category}, title cnt: {len(titles)}, link: {link}")
+
+        return self.compose_elements(titles)
+
+    def compose_elements(self, titles):
         title_text = [t.text for t in titles]
-        print(len(titles))
         links = [t.find("a")["href"] for t in titles]
         articles = [self.get_article(l) for l in links]
-
+        dates = [a["date"] for a in articles]
+        contents = [a["content"] for a in articles]
         ret_dict = {
             "title": title_text,
-            "date": [a["date"] for a in articles],
+            "date": dates,
             "link": links,
-            "content": [a["content"] for a in articles],
+            "content": contents,
         }
         return ret_dict
 

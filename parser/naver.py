@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
@@ -24,19 +26,26 @@ class ParserNaver(DefualtParser):
         self.date_selector = "#ct > div.media_end_head.go_trans > div.media_end_head_info.nv_notrans > div.media_end_head_info_datestamp > div > span"
         self.content_class = "article"
 
-    def parse_articles(self, link):
+    def parse_articles(self, link, category):
         req = requests.get(link, headers=self.request_headers)
         soup = BeautifulSoup(req.content, "html.parser")
         titles = soup.find_all(class_=self.title_content)
-        title_text = [t.text.strip("\n") for t in titles]
+
+        print(f"category: {category}, title cnt: {len(titles)}, link: {link}")
+
+        return self.compose_elements(titles)
+
+    def compose_elements(self, titles):
+        title_text = [t.text for t in titles]
         links = [t["href"] for t in titles]
         articles = [self.get_article(l) for l in links]
-
+        dates = [a["date"] for a in articles]
+        contents = [a["content"] for a in articles]
         ret_dict = {
             "title": title_text,
-            "date": [a["date"] for a in articles],
+            "date": dates,
             "link": links,
-            "content": [a["content"] for a in articles],
+            "content": contents,
         }
         return ret_dict
 
@@ -46,5 +55,7 @@ class ParserNaver(DefualtParser):
 
         date = soup.select_one(self.date_selector)["data-date-time"]
         content = soup.select_one(self.content_class).text
+
+        time.sleep(2)
 
         return {"date": date, "content": content}
