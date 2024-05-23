@@ -33,8 +33,8 @@ class ParserYahoo(DefualtParser):
         title_text = [t.text for t in titles]
         links = [t.find("a")["href"] for t in titles]
         articles = [self.get_article(l) for l in links]
-        dates = [a["date"] for a in articles]
-        contents = [a["content"] for a in articles]
+        dates = [a["date"] if a is not None else "9999-12-31" for a in articles]
+        contents = [a["content"] if a is not None else "None" for a in articles]
         ret_dict = {
             "title": title_text,
             "date": dates,
@@ -52,5 +52,6 @@ class ParserYahoo(DefualtParser):
                 [p.text for p in soup.find(class_=self.content_class).select("p")[:-1]]
             )
         except Exception as e:
-            print(str(e) + link)
+            print(str(e) + ": " + link)
+            return None
         return {"date": date, "content": content}

@@ -5,11 +5,11 @@ import pandas as pd
 import time
 
 from parser.naver import ParserNaver
-from parser.parser_factory import PB_YAHOO, PB_NAVER, ParserFactory
+from parser.parser_factory import PB_YAHOO, PB_NAVER, ParserFactory, PB_CNBC
 from parser.yahoo import ParserYahoo
 
 if __name__ == "__main__":
-    publishers = [PB_YAHOO, PB_NAVER]
+    publishers = [PB_YAHOO, PB_NAVER, PB_CNBC]
     db = DBSqlite()
 
     for publisher in publishers:
